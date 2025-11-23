@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - MyApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght=300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to ensure the container uses the full viewport height and centers content */
+        body {
+            /* Using Lato for the soft look */
+            font-family: 'Lato', sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Dark background to make the card pop */
+            background-color: #1a1a38; 
+        }
+        /* ENHANCEMENT: Custom shadow to match the floating/smooth look */
+        .card-shadow {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+        /* Style for the custom modal message box */
+        .modal-overlay {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-4xl bg-white rounded-3xl card-shadow overflow-hidden flex flex-row min-h-[500px]">
+            
+            <div class="w-full lg:w-3/5 p-8 sm:p-12 md:p-16 flex flex-col justify-center bg-gray-50">
+                
+                <h2 class="text-3xl font-extrabold text-gray-800 text-left mb-10 tracking-tight">
+                    Create Account
+                </h2>
+                
+                <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-6">
+                    
+                    <div>
+                        <label for="name" class="sr-only">Full Name</label>
+                        <div class="relative mt-1">
+                            <input id="name" name="name" type="text" autocomplete="name" required 
+                                   placeholder="Full Name"
+                                   class="appearance-none block w-full pl-10 pr-4 py-3 bg-white border-b border-gray-300 rounded-none
+                                   placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-0 text-base 
+                                   transition duration-150 ease-in-out">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="sr-only">Email Address</label>
+                        <div class="relative mt-1">
+                            <input id="email" name="email" type="email" autocomplete="email" required 
+                                   placeholder="E-mail"
+                                   class="appearance-none block w-full pl-10 pr-4 py-3 bg-white border-b border-gray-300 rounded-none
+                                   placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-0 text-base 
+                                   transition duration-150 ease-in-out">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <div class="relative mt-1">
+                            <input id="password" name="password" type="password" autocomplete="new-password" required 
+                                   placeholder="Password"
+                                   class="appearance-none block w-full pl-10 pr-4 py-3 bg-white border-b border-gray-300 rounded-none
+                                   placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-0 text-base 
+                                   transition duration-150 ease-in-out">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="confirm-password" class="sr-only">Confirm Password</label>
+                        <div class="relative mt-1">
+                            <input id="confirm-password" name="confirm-password" type="password" autocomplete="new-password" required 
+                                   placeholder="Confirm Password"
+                                   class="appearance-none block w-full pl-10 pr-4 py-3 bg-white border-b border-gray-300 rounded-none
+                                   placeholder-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-0 text-base 
+                                   transition duration-150 ease-in-out">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center pt-2">
+                        <div class="flex items-center h-5">
+                            <input id="terms" name="terms" type="checkbox" required
+                                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded-full cursor-pointer">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="terms" class="font-medium text-gray-700">I accept the terms of the agreement</label>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button id="signup-button" type="submit" 
+                                class="w-full flex justify-center py-3 px-4 rounded-full 
+                                       shadow-xl text-base font-bold text-white bg-indigo-600 
+                                       hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500 
+                                       transition duration-200 ease-in-out transform hover:scale-[1.01] active:scale-[0.99] tracking-wider">
+                            Sign Up
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="hidden lg:flex lg:w-2/5 p-10 bg-indigo-600 flex-col justify-center items-center text-center">
+                <h3 class="text-4xl font-extrabold text-white mb-6 tracking-tight">
+                    Get Started
+                </h3>
+                <p class="text-sm font-light text-indigo-200 mb-8">
+                    Already have an account?
+                </p>
+                <a href="/login/index.html" 
+                   class="w-3/5 py-2 px-4 border-2 border-white rounded-full 
+                          text-white font-medium hover:bg-white hover:text-indigo-600 
+                          transition duration-300 ease-in-out">
+                    Log in
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="message-modal" class="modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-8 shadow-2xl max-w-sm w-full">
+            <h3 id="modal-title" class="text-xl font-extrabold mb-3 text-gray-900"></h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <button id="modal-ok-button"
+                    class="w-full py-3 px-4 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition duration-150">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Function to display the custom modal with an optional redirect upon pressing OK.
+         * @param {string} title - The title of the modal.
+         * @param {string} message - The message content.
+         * @param {string | null} redirectUrl - URL to redirect to after closing the modal.
+         */
+        function showMessage(title, message, redirectUrl = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('message-modal').classList.remove('hidden');
+
+            const okButton = document.getElementById('modal-ok-button');
+            // Clear any previous listener
+            okButton.onclick = null; 
+
+            if (redirectUrl) {
+                // Set click handler to close modal AND redirect
+                okButton.onclick = () => {
+                    document.getElementById('message-modal').classList.add('hidden');
+                    // Redirect to the specified URL (e.g., /create/index.html)
+                    window.location.href = redirectUrl; 
+                };
+            } else {
+                // Set click handler to just close the modal
+                okButton.onclick = () => {
+                    document.getElementById('message-modal').classList.add('hidden');
+                };
+            }
+        }
+
+        // Form Submission Handler using LocalStorage
+        window.handleSignup = async (event) => {
+            event.preventDefault();
+            
+            const button = document.getElementById('signup-button');
+            button.disabled = true;
+            button.innerText = 'Processing...';
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // 1. Basic Validation
+            if (password !== confirmPassword) {
+                showMessage("Validation Error", "Passwords do not match. Please try again.");
+                button.disabled = false;
+                button.innerText = 'Sign Up'; // Changed text to match new button
+                return;
+            }
+            
+            // 2. Retrieve existing users or initialize array
+            let users = [];
+            try {
+                const storedUsers = localStorage.getItem('appUsers');
+                if (storedUsers) {
+                    users = JSON.parse(storedUsers);
+                }
+            } catch (e) {
+                console.error("Error reading localStorage:", e);
+                // Continue with empty array if reading fails
+            }
+
+            // 3. Check for existing email
+            const emailExists = users.some(user => user.email === email);
+            if (emailExists) {
+                showMessage("Registration Failed", "An account with this email already exists.");
+                button.disabled = false;
+                button.innerText = 'Sign Up'; // Changed text to match new button
+                return;
+            }
+
+            // 4. Create new user object
+            const newUser = {
+                name: name,
+                email: email,
+                password: password, 
+                registeredAt: new Date().toISOString()
+            };
+            
+            // 5. Add new user and save back to localStorage
+            users.push(newUser);
+            try {
+                localStorage.setItem('appUsers', JSON.stringify(users));
+                
+                // SUCCESS: Also set the current user session state
+                localStorage.setItem('currentUser', JSON.stringify({ email: newUser.email, name: newUser.name }));
+
+                // Redirect to the dashboard page located at /create/index.html
+                showMessage("Success!", `Account created successfully for ${name}. You will now be redirected to the dashboard.`, "/create/index.html");
+                document.getElementById('signup-form').reset(); // Clear form
+
+            } catch (e) {
+                console.error("Error writing to localStorage:", e);
+                showMessage("Storage Failed", "Could not save user data to local storage. Storage might be full.");
+            } finally {
+                button.disabled = false;
+                button.innerText = 'Sign Up'; // Changed text to match new button
+            }
+        };
+    </script>
+</body>
+</html>

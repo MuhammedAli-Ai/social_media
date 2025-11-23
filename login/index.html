@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MyApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght=300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for background and font */
+        body {
+            /* Using Lato for the soft look */
+            font-family: 'Lato', sans-serif; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Modern, calming, light background */
+            background-color: #f0f4f8; 
+        }
+        /* Custom shadow for a floating card effect */
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        /* Style for the custom modal message box */
+        .modal-overlay {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white p-10 md:p-12 rounded-2xl card-shadow border border-gray-100">
+            
+            <h1 class="text-4xl font-black text-indigo-700 text-center mb-3 tracking-tight">
+                MyApp
+            </h1>
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-10">
+                Log in to Your Account
+            </h2>
+            
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-6">
+
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">
+                        Email Address
+                    </label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" autocomplete="email" required 
+                               class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm 
+                               placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base
+                               transition duration-150 ease-in-out hover:border-indigo-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required 
+                               class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm 
+                               placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base
+                               transition duration-150 ease-in-out hover:border-indigo-400">
+                    </div>
+                    
+                    <div class="mt-2 text-sm text-right">
+                        <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">
+                            Forgot password?
+                        </a>
+                    </div>
+                </div>
+
+
+                <div>
+                    <button id="login-button" type="submit" 
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full 
+                                   shadow-lg text-base font-bold text-white bg-indigo-600 
+                                   hover:bg-indigo-700 focus:outline-none focus:ring-3 focus:ring-offset-2 focus:ring-indigo-500 
+                                   transition duration-300 ease-in-out transform hover:scale-[1.01] active:scale-[0.99] tracking-wider">
+                        Log In
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account?
+                    <a href="/signup/index.html" class="font-bold text-indigo-600 hover:text-indigo-500 transition duration-150">
+                        Sign up
+                    </a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <div id="message-modal" class="modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-8 shadow-2xl max-w-sm w-full">
+            <h3 id="modal-title" class="text-xl font-extrabold mb-3 text-gray-900"></h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <button id="modal-ok-button"
+                    class="w-full py-3 px-4 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition duration-150">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Function to display the custom modal with an optional redirect upon pressing OK.
+         * @param {string} title - The title of the modal.
+         * @param {string} message - The message content.
+         * @param {string | null} redirectUrl - URL to redirect to after closing the modal.
+         */
+        function showMessage(title, message, redirectUrl = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('message-modal').classList.remove('hidden');
+
+            const okButton = document.getElementById('modal-ok-button');
+            // Clear any previous listener
+            okButton.onclick = null; 
+
+            if (redirectUrl) {
+                // Set click handler to close modal AND redirect
+                okButton.onclick = () => {
+                    document.getElementById('message-modal').classList.add('hidden');
+                    // Redirect to the specified URL (e.g., /create/index.html)
+                    window.location.href = redirectUrl; 
+                };
+            } else {
+                // Set click handler to just close the modal
+                okButton.onclick = () => {
+                    document.getElementById('message-modal').classList.add('hidden');
+                };
+            }
+        }
+
+        // Form Submission Handler using LocalStorage
+        window.handleLogin = async (event) => {
+            event.preventDefault();
+            
+            const button = document.getElementById('login-button');
+            button.disabled = true;
+            button.innerText = 'Verifying...';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // 1. Retrieve existing users or initialize array
+            let users = [];
+            try {
+                const storedUsers = localStorage.getItem('appUsers');
+                if (storedUsers) {
+                    users = JSON.parse(storedUsers);
+                }
+            } catch (e) {
+                console.error("Error reading localStorage:", e);
+                showMessage("System Error", "Could not read user data. Please try again.");
+                button.disabled = false;
+                button.innerText = 'Log In';
+                return;
+            }
+
+            // 2. Find the user by email
+            const user = users.find(u => u.email === email);
+            
+            if (!user) {
+                // User not found
+                showMessage("Login Failed", "The email address is not registered. Please sign up.");
+            } else if (user.password !== password) {
+                // User found, but password doesn't match
+                showMessage("Login Failed", "Invalid password. Please check your credentials.");
+            } else {
+                // 3. SUCCESS: Set the current user session state
+                try {
+                    localStorage.setItem('currentUser', JSON.stringify({ email: user.email, name: user.name }));
+
+                    // Redirect to the dashboard page located at /create/index.html
+                    showMessage("Success!", `Welcome back, ${user.name || user.email}! Redirecting to dashboard.`, "/create/index.html");
+                    document.getElementById('login-form').reset(); // Clear form
+
+                } catch (e) {
+                    console.error("Error writing session to localStorage:", e);
+                    showMessage("Session Error", "Could not create local session. Try clearing browser cache.");
+                }
+            }
+
+            // Reset button state
+            button.disabled = false;
+            button.innerText = 'Log In';
+        };
+    </script>
+</body>
+</html>

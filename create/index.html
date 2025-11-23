@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyApp Feed - Main</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            /* Changed to a dark, professional background */
+            font-family: 'Inter', sans-serif; 
+            min-height: 100vh;
+            background-color: #1A202C; /* Dark Slate/Navy background */
+            color: #E2E8F0; /* Light text color */
+        }
+        /* New scrollbar style for dark mode, subtle, professional */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #2D3748; }
+        ::-webkit-scrollbar-thumb { background: #4A5568; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+
+        /* Modal Overlay must be on top of everything */
+        .modal-overlay { z-index: 1000; }
+        /* Style for image in feed to ensure good display */
+        .post-image {
+            max-height: 400px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 8px; /* Added slight rounding */
+        }
+        /* Custom Post Card Styling for Depth */
+        .post-card {
+            background-color: #2D3748; /* Darker Card Background */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.3); /* Deep shadow */
+            border: 1px solid #4A5568; /* Subtle border */
+        }
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <header class="bg-gray-800 shadow-xl sticky top-0 z-10 border-b border-gray-700">
+        <div class="max-w-6xl mx-auto flex items-center justify-between p-4 flex-wrap gap-4">
+            
+            <h1 class="text-3xl font-extrabold text-teal-400 tracking-wider">MyApp <span class="text-gray-500 font-light">Feed</span></h1>
+            
+            <div class="relative w-full sm:w-1/2 md:w-1/3 order-2 md:order-none">
+                <input id="search-input" type="text" placeholder="Search posts or users..."
+                        class="w-full px-4 py-2 border border-gray-600 bg-gray-700 text-gray-200 rounded-xl shadow-inner focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            
+            <div class="flex items-center space-x-4 order-1 md:order-none">
+                <div id="auth-controls" class="flex items-center space-x-4">
+                    
+                    <button id="logout-btn"
+                            class="px-3 py-1 text-sm bg-gray-600 text-gray-200 rounded-lg hover:bg-gray-500 transition hidden">
+                        Log Out
+                    </button>
+
+                    <a href="../index.html" id="login-link"
+                            class="px-3 py-1 text-sm bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition hidden">
+                        Log In
+                    </a>
+                </div>
+
+                <button id="create-post-btn"
+                        class="px-4 py-2 bg-teal-500 text-gray-900 font-semibold rounded-xl shadow-lg hover:bg-teal-400 transition duration-150 ease-in-out flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                    New Post
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 flex flex-col md:flex-row gap-8">
+        
+        <div class="w-full md:w-1/4 flex flex-col gap-6">
+            
+            <aside id="profile-sidebar" class="w-full hidden md:block md:self-start sticky top-20">
+                <div class="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
+                    <h3 class="text-xl font-bold text-teal-400 mb-4 border-b border-gray-700 pb-2">Your Dashboard</h3>
+                    
+                    <div class="flex flex-col items-center mb-4">
+                        <div id="profile-avatar" class="h-16 w-16 bg-teal-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-xl ring-2 ring-teal-400 mb-3">
+                        </div>
+                        <p id="profile-display-name" class="text-xl font-bold text-gray-100 break-words text-center"></p>
+                        <p id="profile-display-email" class="text-sm text-gray-400 break-words text-center"></p>
+                    </div>
+                    
+                    <div class="flex justify-around mt-4 pt-4 border-t border-gray-700">
+                        <div class="text-center">
+                            <p id="profile-total-posts" class="text-2xl font-extrabold text-teal-400">0</p>
+                            <p class="text-xs text-gray-400">Posts</p>
+                        </div>
+                        <div class="text-center">
+                            <p id="profile-following-count" class="text-2xl font-extrabold text-teal-400">0</p>
+                            <p class="text-xs text-gray-400">Following</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <aside id="following-list-sidebar" class="w-full hidden md:block md:self-start sticky top-[300px]">
+                <div class="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
+                    <h3 class="text-xl font-bold text-gray-200 mb-4 border-b border-gray-700 pb-2">Following</h3>
+                    <div id="following-list" class="space-y-3">
+                        <p class="text-gray-500 text-sm italic">Follow users to see them here.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <div class="w-full md:w-3/4">
+            <h2 class="text-3xl font-bold mb-4 text-teal-400">Feed Activity</h2>
+
+            <div class="flex space-x-3 mb-6 bg-gray-800 p-3 rounded-xl shadow-inner border border-gray-700">
+                <button id="filter-all-btn" class="filter-btn px-4 py-2 text-sm font-semibold rounded-xl transition bg-teal-500 text-gray-900 hover:bg-teal-400 shadow-md">
+                    🌍 All Posts
+                </button>
+                <button id="filter-following-btn" class="filter-btn px-4 py-2 text-sm font-semibold rounded-xl transition bg-gray-600 text-gray-200 hover:bg-gray-500 shadow-md">
+                    👥 Following
+                </button>
+            </div>
+
+            <div id="feed-container" class="space-y-8">
+            </div>
+        </div>
+    </main>
+
+    <div id="post-modal" class="modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-xl p-8 shadow-3xl max-w-lg w-full border border-teal-700">
+            <h3 class="text-2xl font-bold mb-5 text-teal-400">Create a New Post</h3>
+            
+            <form id="new-post-form" class="space-y-4">
+                
+                <div>
+                    <label for="post-text" class="block text-sm font-medium text-gray-300 mb-1">
+                        What's on your mind?
+                    </label>
+                    <textarea id="post-text" rows="4" maxlength="500" required
+                        class="appearance-none block w-full px-4 py-3 border border-gray-600 bg-gray-700 text-gray-200 rounded-lg shadow-inner
+                        placeholder-gray-500 focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-base"
+                        placeholder="Enter your message (max 500 characters)"></textarea>
+                </div>
+
+                <div>
+                    <label for="post-image-url" class="block text-sm font-medium text-gray-300 mb-1">
+                        Image URL (Optional)
+                    </label>
+                    <input id="post-image-url" type="url" 
+                        class="appearance-none block w-full px-4 py-3 border border-gray-600 bg-gray-700 text-gray-200 rounded-lg shadow-inner
+                        placeholder-gray-500 focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-base"
+                        placeholder="Paste an image link here (e.g., from Unsplash)">
+                    <p class="mt-2 text-xs text-gray-500">
+                        *Note: URL input is used for this demo.
+                    </p>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancel-post-btn"
+                            class="px-4 py-2 text-gray-300 bg-gray-600 rounded-xl hover:bg-gray-500 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submit-post-btn"
+                            class="px-4 py-2 bg-teal-500 text-gray-900 font-semibold rounded-xl shadow-lg hover:bg-teal-400 transition">
+                        🚀 Post to Feed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="logout-modal" class="modal-overlay hidden fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl max-w-sm w-full space-y-4 border border-gray-700">
+            <h3 class="text-xl font-bold text-gray-100">Confirm Logout</h3>
+            <p class="text-gray-400">Are you sure you want to log out of MyApp?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="modal-cancel-btn" type="button" class="px-4 py-2 text-gray-300 bg-gray-600 rounded-lg hover:bg-gray-500 transition">
+                    Cancel
+                </button>
+                <button id="modal-logout-confirm-btn" type="button" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                    Log Out
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="message-box" class="fixed bottom-4 right-4 p-3 bg-teal-600 text-white rounded-xl shadow-2xl hidden transition-opacity duration-300">
+    </div>
+
+
+    <script>
+        // Paste all your existing JavaScript logic here to ensure it works with the new IDs and classes.
+        // I will make necessary adjustments to class names within the JS for the new look (e.g., colors in renderPost)
+
+        // DOM Elements
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginLink = document.getElementById('login-link');
+        const profileSidebar = document.getElementById('profile-sidebar');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const profileDisplayName = document.getElementById('profile-display-name');
+        const profileDisplayEmail = document.getElementById('profile-display-email');
+        const followingList = document.getElementById('following-list');
+        const searchInput = document.getElementById('search-input'); 
+        
+        // Profile Stats
+        const profileTotalPosts = document.getElementById('profile-total-posts');
+        const profileFollowingCount = document.getElementById('profile-following-count'); 
+
+        // Filter Elements
+        const filterAllBtn = document.getElementById('filter-all-btn');
+        const filterFollowingBtn = document.getElementById('filter-following-btn');
+        let currentFilter = 'all'; // 'all' or 'following'
+
+        // Modal elements
+        const logoutModal = document.getElementById('logout-modal');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalLogoutConfirmBtn = document.getElementById('modal-logout-confirm-btn');
+        const messageBox = document.getElementById('message-box');
+        
+        const postModal = document.getElementById('post-modal');
+        const createPostBtn = document.getElementById('create-post-btn');
+        const cancelPostBtn = document.getElementById('cancel-post-btn');
+        const newPostForm = document.getElementById('new-post-form');
+        const feedContainer = document.getElementById('feed-container');
+
+
+        let currentUser = null;
+        let debounceTimer; // For search input debounce
+
+        // --- Helper Functions ---
+        function showMessage(message, duration = 3000, isError = false) {
+            messageBox.innerText = message;
+            // Set background color based on message type
+            messageBox.classList.remove('bg-teal-600', 'bg-red-600');
+            messageBox.classList.add(isError ? 'bg-red-600' : 'bg-teal-600');
+
+            messageBox.classList.remove('hidden', 'opacity-0');
+            messageBox.classList.add('opacity-100');
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-100');
+                messageBox.classList.add('opacity-0');
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 300);
+            }, duration);
+        }
+        
+        // --- User Data Management (Handles the new 'following' array) ---
+        function loadCurrentUser() {
+            try {
+                const userString = localStorage.getItem('currentUser');
+                if (userString) {
+                    let user = JSON.parse(userString);
+                    // Ensure 'following' array exists
+                    user.following = user.following || []; 
+                    return user;
+                }
+                return null;
+            } catch (e) {
+                console.error("Error loading current user:", e);
+                return null;
+            }
+        }
+
+        function saveCurrentUser(user) {
+            try {
+                // IMPORTANT: Use loadCurrentUser to ensure we save the entire user object including 'following'
+                let savedUser = loadCurrentUser(); 
+                if (savedUser) {
+                    // Only update the 'following' list and other critical properties
+                    savedUser.following = user.following;
+                    localStorage.setItem('currentUser', JSON.stringify(savedUser));
+                    currentUser = savedUser; // Update the global variable
+                } else {
+                     // If for some reason the full user isn't there, save the provided one
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    currentUser = user;
+                }
+            } catch (e) {
+                console.error("Error saving current user:", e);
+            }
+        }
+
+        // Helper: Count total posts by current user
+        function countUserPosts() {
+            if (!currentUser) return 0;
+            const allPosts = loadPosts();
+            return allPosts.filter(post => post.userId === currentUser.email).length;
+        }
+
+        // --- Authentication Check ---
+        function checkAuthentication() {
+            currentUser = loadCurrentUser();
+            
+            if (currentUser) {
+                const name = currentUser.name || currentUser.email.split('@')[0];
+                const initials = name.charAt(0).toUpperCase();
+
+                // Logged In State: Show profile and Log Out button
+                logoutBtn.classList.remove('hidden');
+                loginLink.classList.add('hidden');
+                profileSidebar.classList.remove('hidden');
+                
+                // Populate Profile Sidebar
+                profileAvatar.innerText = initials;
+                profileDisplayName.innerText = name;
+                profileDisplayEmail.innerText = currentUser.email || 'No email available';
+
+                // NEW: Populate Stats (Posts and Following)
+                profileTotalPosts.innerText = countUserPosts();
+                profileFollowingCount.innerText = currentUser.following.length; 
+
+            } else {
+                // Logged Out State: Hide profile and Log Out button, show Log In link
+                currentUser = null;
+                logoutBtn.classList.add('hidden');
+                loginLink.classList.remove('hidden');
+                profileSidebar.classList.add('hidden');
+                
+                // Redirect is crucial for a real app, but for local demo, we use a friendly redirect
+                window.location.href = "../index.html"; 
+            }
+        }
+
+        // --- Log Out Handler (Unchanged) ---
+        logoutBtn.addEventListener('click', () => {
+            logoutModal.classList.remove('hidden');
+        });
+        
+        modalCancelBtn.addEventListener('click', () => {
+            logoutModal.classList.add('hidden');
+        });
+        
+        modalLogoutConfirmBtn.addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            logoutModal.classList.add('hidden');
+            showMessage("You have been logged out.", 1500);
+            setTimeout(() => {
+                window.location.href = "../index.html"; 
+            }, 1800);
+        });
+
+        // --- Post Management and Feed Logic ---
+
+        function loadPosts() {
+            try {
+                const posts = localStorage.getItem('appPosts');
+                if (posts) {
+                    let loadedPosts = JSON.parse(posts);
+                    // Ensure all posts have a 'likes' and 'comments' array
+                    return loadedPosts.map(post => ({
+                        ...post,
+                        likes: post.likes || [],
+                        comments: post.comments || []
+                    }));
+                } else {
+                    return [{
+                        id: 0,
+                        userId: 'system',
+                        userName: 'MyApp Admin',
+                        text: "Welcome to your social feed! Click the 'New Post' button to share your first image and message.",
+                        imageUrl: 'https://placehold.co/800x250/065f46/ffffff?text=Welcome+to+MyApp+Feed',
+                        timestamp: new Date().toISOString(),
+                        likes: [],
+                        comments: [{ 
+                            userName: 'System Bot',
+                            text: 'This is an example comment to show how the section works.',
+                            timestamp: new Date().toISOString()
+                        }]
+                    }];
+                }
+            } catch (e) {
+                console.error("Error loading posts:", e);
+                return [];
+            }
+        }
+
+        function savePosts(posts) {
+            try {
+                localStorage.setItem('appPosts', JSON.stringify(posts));
+            } catch (e) {
+                console.error("Error saving posts:", e);
+                showMessage("Could not save post data.", 3000, true);
+            }
+        }
+        
+        // Helper: Renders comments list for the post HTML
+        function renderComments(comments) {
+            if (comments.length === 0) {
+                return '<p class="text-xs italic text-gray-500">Be the first to comment!</p>';
+            }
+            
+            return comments.map(comment => {
+                const commenterInitial = comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U';
+                return `
+                    <div class="flex items-start text-sm bg-gray-700 p-2 rounded-lg border border-gray-600">
+                        <div class="h-6 w-6 bg-yellow-600 rounded-full flex items-center justify-center text-xs font-bold text-white mr-2 flex-shrink-0">
+                            ${commenterInitial}
+                        </div>
+                        <p class="leading-tight">
+                            <span class="font-semibold text-gray-100">${comment.userName}:</span>
+                            <span class="text-gray-300">${comment.text}</span>
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // UPDATED: Styling for the renderPost function
+        function renderPost(post) {
+            const avatarInitial = post.userName ? post.userName.charAt(0).toUpperCase() : 'U';
+            const postAuthorEmail = post.userId;
+            const isMyPost = currentUser && postAuthorEmail === currentUser.email;
+
+            const imageHtml = post.imageUrl
+                ? `<div class="mb-4"><img src="${post.imageUrl}" alt="Post Image" class="post-image rounded-xl" onerror="this.onerror=null;this.src='https://placehold.co/800x250/374151/9CA3AF?text=Image+Load+Failed'" style="max-height: 400px; object-fit: cover;"></div>`
+                : '';
+            
+            // --- Like Logic ---
+            const isLiked = currentUser && post.likes && post.likes.includes(currentUser.email);
+            const likeButtonClasses = isLiked ? 'text-red-400 bg-red-800/50 hover:bg-red-800' : 'text-gray-400 bg-gray-700 hover:bg-gray-600';
+            const likeIcon = isLiked ? 
+                `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>` :
+                `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`;
+            
+            // --- Delete Logic ---
+            const isDeletable = isMyPost;
+            const deleteButtonHtml = isDeletable ? `
+                <button data-post-id="${post.id}" class="delete-post-btn px-3 py-1 text-sm bg-red-900/50 text-red-300 rounded-lg hover:bg-red-800 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                </button>
+            ` : '';
+
+            // --- Follow Logic ---
+            const isFollowing = currentUser && currentUser.following.includes(postAuthorEmail);
+            const followButtonText = isFollowing ? 'Unfollow' : 'Follow';
+            // Dark mode follow button styling
+            const followButtonClasses = isFollowing ? 'text-gray-400 bg-gray-600 hover:bg-gray-500' : 'text-teal-400 bg-teal-800/50 hover:bg-teal-800';
+            const followButtonHtml = !isMyPost && postAuthorEmail !== 'system' ? `
+                <button data-user-email="${postAuthorEmail}" data-user-name="${post.userName}"
+                        class="follow-post-btn ml-3 px-3 py-1 text-xs font-semibold rounded-full transition ${followButtonClasses}">
+                    ${followButtonText}
+                </button>
+            ` : '';
+            
+            // --- Share Logic ---
+            const shareButtonHtml = `
+                <button data-post-id="${post.id}" class="share-post-btn px-3 py-1 text-sm bg-teal-800/50 text-teal-300 rounded-lg hover:bg-teal-800 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.88 12.536 9 11.69 9 10.833V10l.775.388c.83.415 1.734.48 2.625.198l.685-.228m2.074 1.761c.42.923.493 1.956.184 2.924l-.15.421m-6.074-.707c-.42.923-.97 1.776-1.63 2.535l-.46.538m0-2.031c-.533 0-1.025.212-1.383.568L4 17.5l.443.443a2 2 0 002.828 0l1.157-1.157m-6.428-1.745l-.46-.538m0 0c-.66-.759-1.21-1.612-1.63-2.535m.001 0a2.5 2.5 0 011.63-2.535c.42-.923.97-1.776 1.63-2.535m.42 2.535c.42.923.97 1.776 1.63 2.535l.46.538m0 0a2.5 2.5 0 011.63 2.535" />
+                    </svg>
+                    Share
+                </button>
+            `;
+            
+            const postHtml = `
+                <div class="post-card p-6 rounded-xl border border-gray-700" data-post-id="${post.id}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start">
+                            <div class="h-12 w-12 bg-purple-700 rounded-full mr-3 flex items-center justify-center text-xl font-bold text-white shadow-inner flex-shrink-0">
+                                ${avatarInitial}
+                            </div>
+                            <div>
+                                <p class="font-bold text-lg text-gray-100">${post.userName || 'Unknown User'}</p>
+                                <p class="text-xs text-gray-500">${new Date(post.timestamp).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${followButtonHtml}
+                            ${isDeletable ? deleteButtonHtml : ''}
+                        </div>
+                    </div>
+                    ${imageHtml}
+                    <p class="text-gray-300 whitespace-pre-wrap mb-4">${post.text}</p>
+
+                    <div class="flex justify-between items-center border-t border-gray-700 pt-3">
+                        <div class="flex items-center space-x-4">
+                            <button data-post-id="${post.id}" class="like-post-btn px-3 py-1 text-sm rounded-lg transition flex items-center ${likeButtonClasses}">
+                                ${likeIcon}
+                                <span>${post.likes ? post.likes.length : 0} Like${(post.likes && post.likes.length !== 1) ? 's' : ''}</span>
+                            </button>
+                            ${shareButtonHtml}
+                        </div>
+                        <p class="text-sm text-gray-600 hidden sm:block">ID: ${post.id}</p>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                        <h4 class="text-sm font-bold text-gray-300 mb-2">${post.comments ? post.comments.length : 0} Comment${(post.comments && post.comments.length !== 1) ? 's' : ''}</h4>
+                        
+                        <div class="space-y-2 mb-3 max-h-40 overflow-y-auto pr-2" id="comments-list-${post.id}">
+                            ${renderComments(post.comments || [])}
+                        </div>
+
+                        <form class="add-comment-form flex space-x-2" data-post-id="${post.id}">
+                            <input type="text" placeholder="Add a comment..." required
+                                class="w-full px-3 py-1 text-sm border border-gray-600 bg-gray-700 text-gray-200 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 comment-input">
+                            <button type="submit" class="px-3 py-1 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition">
+                                Post
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            feedContainer.insertAdjacentHTML('beforeend', postHtml); 
+        }
+
+        // Function to filter posts based on search query
+        function searchPosts(query) {
+            const allPosts = loadPosts();
+            if (!query) {
+                return allPosts;
+            }
+
+            const lowerCaseQuery = query.toLowerCase();
+
+            return allPosts.filter(post => {
+                // Check post text
+                if (post.text && post.text.toLowerCase().includes(lowerCaseQuery)) {
+                    return true;
+                }
+                // Check user name
+                if (post.userName && post.userName.toLowerCase().includes(lowerCaseQuery)) {
+                    return true;
+                }
+                // Check user email
+                if (post.userId && post.userId.toLowerCase().includes(lowerCaseQuery)) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        // Function to filter posts based on who the user is following
+        function filterPostsByFollowing(posts) {
+            if (!currentUser || !currentUser.following || currentUser.following.length === 0) {
+                return []; 
+            }
+            
+            // System posts (like ID: 0) are always shown in all filters for initial visibility
+            const filtered = posts.filter(post => 
+                currentUser.following.includes(post.userId) || post.userId === 'system'
+            );
+            
+            return filtered;
+        }
+
+
+        function renderFollowingSidebar() {
+            if (!currentUser || !currentUser.following || currentUser.following.length === 0) {
+                followingList.innerHTML = '<p class="text-gray-500 text-sm italic">Follow users to see them here.</p>';
+                return;
+            }
+
+            followingList.innerHTML = ''; 
+
+            currentUser.following.forEach(followedEmail => {
+                const displayEmail = followedEmail.split('@')[0];
+                const initial = displayEmail.charAt(0).toUpperCase();
+
+                const itemHtml = `
+                    <div class="flex items-center justify-between p-2 bg-gray-700 rounded-lg transition hover:bg-gray-600">
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 bg-purple-700 rounded-full mr-3 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                ${initial}
+                            </div>
+                            <p class="text-sm font-medium text-gray-200 truncate">${displayEmail}</p>
+                        </div>
+                        <button data-user-email="${followedEmail}" data-user-name="${displayEmail}"
+                                class="follow-post-btn text-xs font-medium text-red-400 hover:text-red-300" 
+                                title="Unfollow ${displayEmail}">
+                            Unfollow
+                        </button>
+                    </div>
+                `;
+                followingList.insertAdjacentHTML('beforeend', itemHtml);
+            });
+            document.getElementById('following-list-sidebar').classList.remove('hidden');
+        }
+
+
+        function refreshFeed() {
+            feedContainer.innerHTML = ''; 
+            
+            // 1. Get posts based on search query
+            const currentQuery = searchInput.value.trim();
+            let posts = searchPosts(currentQuery); // Apply search filter first
+            
+            // 2. Apply Following Filter 
+            if (currentFilter === 'following') {
+                posts = filterPostsByFollowing(posts);
+                // Also update button styles here just in case of initial load or direct function call
+                setFilter('following', false); 
+            } else {
+                   setFilter('all', false);
+            }
+            
+            // 3. Sort posts
+            posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // 4. Render posts or message
+            if (posts.length === 0) {
+                let messageText = "Try a different search term or create a new post!";
+                let titleText = "No results found.";
+
+                if (currentFilter === 'following') {
+                    titleText = "No Posts from Following";
+                    messageText = currentUser && currentUser.following.length === 0 
+                        ? "You are not following any users yet. Follow a user to see their posts here!"
+                        : "None of the users you follow have posted anything matching your current search or there are no users to follow.";
+                }
+                
+                feedContainer.innerHTML = `
+                    <div class="text-center p-8 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                        <p class="text-xl font-semibold text-gray-200">${titleText}</p>
+                        <p class="text-gray-400 mt-2">${messageText}</p>
+                    </div>
+                `;
+            } else {
+                posts.forEach(post => renderPost(post));
+            }
+            
+            renderFollowingSidebar();
+            attachFeedEventListeners();
+        }
+        
+        // --- Core Action Logic ---
+
+        function toggleLike(postId) {
+            if (!currentUser) {
+                showMessage("You must be logged in to like a post.", 3000, true);
+                return;
+            }
+
+            let posts = loadPosts();
+            const postIndex = posts.findIndex(p => p.id == postId);
+
+            if (postIndex === -1) return;
+
+            const post = posts[postIndex];
+            post.likes = post.likes || [];
+            const userEmail = currentUser.email;
+
+            if (post.likes.includes(userEmail)) {
+                // Unlike
+                post.likes = post.likes.filter(email => email !== userEmail);
+                showMessage("Unliked post.", 1500);
+            } else {
+                // Like
+                post.likes.push(userEmail);
+                showMessage("Liked post!", 1500);
+            }
+
+            savePosts(posts);
+            refreshFeed(); 
+        }
+
+        function deletePost(postId) {
+            if (!currentUser) {
+                showMessage("You must be logged in to delete a post.", 3000, true);
+                return;
+            }
+
+            let posts = loadPosts();
+            const postIndex = posts.findIndex(p => p.id == postId);
+
+            if (postIndex === -1) return;
+
+            const post = posts[postIndex];
+            
+            // Security check: Only owner can delete
+            if (post.userId !== currentUser.email) {
+                showMessage("You can only delete your own posts.", 3000, true);
+                return;
+            }
+
+            if (confirm("Are you sure you want to delete this post?")) {
+                posts.splice(postIndex, 1);
+                savePosts(posts);
+                checkAuthentication(); // Refresh stats
+                refreshFeed();
+                showMessage("Post deleted.", 1500);
+            }
+        }
+        
+        function toggleFollow(followedEmail, followedUserName) {
+            if (!currentUser) {
+                showMessage("You must be logged in to follow users.", 3000, true);
+                return;
+            }
+
+            if (followedEmail === currentUser.email) {
+                showMessage("You cannot follow yourself.", 3000, true);
+                return;
+            }
+            
+            currentUser = loadCurrentUser(); 
+            const isFollowing = currentUser.following.includes(followedEmail);
+            
+            if (isFollowing) {
+                // Unfollow
+                currentUser.following = currentUser.following.filter(email => email !== followedEmail);
+                showMessage(`You unfollowed ${followedUserName}.`, 1500);
+            } else {
+                // Follow
+                currentUser.following.push(followedEmail);
+                showMessage(`You are now following ${followedUserName}!`, 1500);
+            }
+
+            saveCurrentUser(currentUser);
+            checkAuthentication(); // Refresh following count
+            refreshFeed(); 
+        }
+        
+        async function sharePost(postId) {
+            const posts = loadPosts();
+            const post = posts.find(p => p.id == postId);
+
+            if (!post) return;
+
+            const shareTitle = `Post by ${post.userName || 'a User'}`;
+            const shareText = `${post.text}\n\nCheck out this post on MyApp!`;
+            const shareUrl = window.location.href; 
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: shareTitle,
+                        text: shareText,
+                        url: shareUrl,
+                    });
+                    showMessage("Post shared successfully!", 2000);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error('Error sharing:', error);
+                        showMessage("Could not share post.", 3000, true);
+                    }
+                }
+            } else {
+                const contentToCopy = `${shareTitle}\n\n"${post.text}"\n\nLink: ${shareUrl}`;
+                try {
+                    await navigator.clipboard.writeText(contentToCopy);
+                    showMessage("Post content and link copied to clipboard!", 2500);
+                } catch (err) {
+                    console.error('Fallback copy failed:', err);
+                    showMessage("Could not copy post content.", 3000, true);
+                }
+            }
+        }
+
+        // Core Action: Add a comment to a post
+        function addComment(postId, commentText) {
+            if (!currentUser) {
+                showMessage("You must be logged in to comment.", 3000, true);
+                return;
+            }
+            
+            let posts = loadPosts();
+            const postIndex = posts.findIndex(p => p.id == postId);
+
+            if (postIndex === -1) return;
+
+            const newComment = {
+                userName: currentUser.name || currentUser.email.split('@')[0],
+                text: commentText,
+                timestamp: new Date().toISOString()
+            };
+            
+            posts[postIndex].comments = posts[postIndex].comments || [];
+            posts[postIndex].comments.push(newComment);
+            
+            savePosts(posts);
+            refreshFeed(); 
+            showMessage("Comment added.", 1500);
+        }
+
+        // --- Event Delegation for Feed ---
+        function attachFeedEventListeners() {
+            // Remove/Add to prevent duplicate listeners on refreshFeed
+            feedContainer.removeEventListener('click', handleFeedClick); 
+            feedContainer.addEventListener('click', handleFeedClick);
+            
+            followingList.removeEventListener('click', handleFeedClick); 
+            followingList.addEventListener('click', handleFeedClick);
+
+             // Handle comment form submissions using delegation
+            feedContainer.querySelectorAll('.add-comment-form').forEach(form => {
+                form.removeEventListener('submit', handleCommentSubmit); // Remove old listener
+                form.addEventListener('submit', handleCommentSubmit);    // Add new listener
+            });
+        }
+        
+        function handleCommentSubmit(e) {
+             e.preventDefault();
+            const postId = e.target.dataset.postId;
+            const commentInput = e.target.querySelector('.comment-input');
+            const commentText = commentInput.value.trim();
+
+            if (commentText) {
+                addComment(postId, commentText);
+            } else {
+                showMessage("Comment cannot be empty.", 2000, true);
+            }
+        }
+
+        function handleFeedClick(e) {
+            const likeBtn = e.target.closest('.like-post-btn');
+            if (likeBtn) {
+                e.preventDefault();
+                toggleLike(likeBtn.dataset.postId);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.delete-post-btn');
+            if (deleteBtn) {
+                e.preventDefault();
+                deletePost(deleteBtn.dataset.postId);
+                return;
+            }
+            
+            const shareBtn = e.target.closest('.share-post-btn'); 
+            if (shareBtn) {
+                e.preventDefault();
+                sharePost(shareBtn.dataset.postId);
+                return;
+            }
+            
+            const followBtn = e.target.closest('.follow-post-btn');
+            if (followBtn) {
+                e.preventDefault();
+                const followedEmail = followBtn.dataset.userEmail;
+                const followedUserName = followBtn.dataset.userName || followedEmail.split('@')[0];
+                toggleFollow(followedEmail, followedUserName);
+                return;
+            }
+            // Comment form submission is handled by handleCommentSubmit
+        }
+
+        // --- Filter Button Logic ---
+
+        function setFilter(filterType, doRefresh = true) {
+            currentFilter = filterType;
+            // Update button styles for Dark Mode Theme
+            const activeClasses = 'bg-teal-500 text-gray-900 hover:bg-teal-400';
+            const inactiveClasses = 'bg-gray-600 text-gray-200 hover:bg-gray-500';
+
+            // Function to swap classes efficiently
+            const swapClasses = (element, isActive) => {
+                if (isActive) {
+                    element.classList.remove(...inactiveClasses.split(' '));
+                    element.classList.add(...activeClasses.split(' '));
+                } else {
+                    element.classList.remove(...activeClasses.split(' '));
+                    element.classList.add(...inactiveClasses.split(' '));
+                }
+            };
+
+            swapClasses(filterAllBtn, filterType === 'all');
+            swapClasses(filterFollowingBtn, filterType === 'following');
+
+            if (doRefresh) {
+                refreshFeed();
+            }
+        }
+
+        filterAllBtn.addEventListener('click', () => setFilter('all'));
+        filterFollowingBtn.addEventListener('click', () => setFilter('following'));
+
+        // --- Search Input Debounce Logic ---
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            // Wait 300ms after the user stops typing to refresh the feed
+            debounceTimer = setTimeout(() => {
+                refreshFeed();
+            }, 300); 
+        });
+
+
+        // --- Event Listeners (Post Modal) ---
+
+        createPostBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showMessage("Please log in to create a post.", 3000, true);
+                return;
+            }
+            postModal.classList.remove('hidden');
+        });
+
+        cancelPostBtn.addEventListener('click', () => {
+            postModal.classList.add('hidden');
+            newPostForm.reset();
+        });
+
+        newPostForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const text = document.getElementById('post-text').value.trim();
+            const imageUrl = document.getElementById('post-image-url').value.trim();
+
+            if (!text) {
+                showMessage("Please enter some text for your post.", 3000, true);
+                return;
+            }
+            
+            const posts = loadPosts().filter(post => post.id !== 0); 
+
+            const newPost = {
+                id: Date.now(),
+                userId: currentUser.email,
+                userName: currentUser.name || currentUser.email.split('@')[0],
+                text: text,
+                imageUrl: imageUrl,
+                timestamp: new Date().toISOString(),
+                likes: [],
+                comments: [] // Initialize comments array
+            };
+
+            posts.push(newPost);
+            savePosts(posts);
+
+            postModal.classList.add('hidden');
+            newPostForm.reset();
+            // Clear search when posting, then refresh
+            searchInput.value = '';
+            checkAuthentication(); // Refresh posts count
+            refreshFeed(); 
+            showMessage("Post created successfully!", 2000);
+        });
+
+        // Initialize Authentication and Feed when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthentication();
+            refreshFeed();
+        });
+    </script>
+</body>
+</html>
